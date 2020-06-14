@@ -19,6 +19,10 @@ export default class App {
       this.puzzleMgr = new PuzzleManager(this.imgSrc, data);
     };
 
+    // callback([
+    //   { textExample: "Riding in <b>adventure</b>." },
+    //   { textExample: "The next sentence." }
+    // ]);
     Fetcher.getWords(level, page, callback);
   }
 
