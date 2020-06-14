@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Puzzle</title>
+    <link rel="stylesheet" href="./src/css/styles.css" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./assets/favicon-32x32.png"
+    />
+  </head>
+  <body>
+    <header class="wrapper">
+      <div class="page_controls">
+        <div class="flex">
+          <span class="label">Level: </span>
+          <div id="switcherLevel" class="switcher switcher_level">
+            <div class="switcher--button">-</div>
+            <input
+              class="switcher--input"
+              type="number"
+              min="1"
+              max="6"
+              value="1"
+              prevvalue="1"
+            />
+            <div class="switcher--button switcher--button_increment">+</div>
+          </div>
+        </div>
+        <div class="flex">
+          <span class="label">Page: </span>
+          <div id="switcherPage" class="switcher switcher_page">
+            <div class="switcher--button">-</div>
+            <input
+              class="switcher--input"
+              type="number"
+              min="1"
+              max="30"
+              value="1"
+              prevvalue="1"
+            />
+            <div class="switcher--button switcher--button_increment">+</div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="wrapper">
+      <div class="playground">
+        <div class="board">
+          <div class="board--line"></div>
+          <div class="board--line"></div>
+          <div class="board--line"></div>
+          <div class="board--line"></div>
+        </div>
+        <div class="respawn"></div>
+        <button class="button check_button">Check</button>
+      </div>
+    </main>
+    <script src="./src/lodash.js"></script>
+    <script type="module" src="./src/index.js"></script>
+  </body>
+</html>
