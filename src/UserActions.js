@@ -35,19 +35,19 @@ export default class UserActions {
 
   isMouseOver(elem, event) {
     return (
-      event.y > elem.offsetTop &&
-      event.y < elem.offsetTop + elem.offsetHeight &&
-      event.x > elem.offsetLeft &&
-      event.x < elem.offsetLeft + elem.offsetWidth
+      event.pageY > elem.offsetTop &&
+      event.pageY < elem.offsetTop + elem.offsetHeight &&
+      event.pageX > elem.offsetLeft &&
+      event.pageX < elem.offsetLeft + elem.offsetWidth
     );
   }
 
   getPieceMouseOverOrLefter(event) {
     return _.find(this.activeLine.children, piece => {
       return (
-        event.y > piece.offsetTop &&
-        event.y < piece.offsetTop + piece.offsetHeight &&
-        event.x < piece.offsetLeft + piece.offsetWidth
+        event.pageY > piece.offsetTop &&
+        event.pageY < piece.offsetTop + piece.offsetHeight &&
+        event.pageX < piece.offsetLeft + piece.offsetWidth
       );
     });
   }
@@ -132,8 +132,8 @@ export default class UserActions {
       return;
 
     this.draggedEl = event.target;
-    this.dragStartX = event.layerX;
-    this.dragStartY = event.layerY;
+    this.dragStartX = event.x - event.target.offsetLeft;
+    this.dragStartY = event.y - event.target.offsetTop;
     this.dragLength = 0;
   }
 

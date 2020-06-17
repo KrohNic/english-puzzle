@@ -14,6 +14,7 @@ export default class PuzzleManager {
     this.respawn = document.querySelector(".respawn");
     this.checkButton = document.querySelector(".check_button");
     this.fillAnswButton = document.querySelector(".fill_button");
+
     this.img = new Image();
 
     this.imgRatio;
@@ -62,6 +63,7 @@ export default class PuzzleManager {
   imgLoadHandler() {
     this.imgRatio = this.img.height / this.img.width;
     this.resizeHandler();
+    document.querySelector(".loading_placeholder").classList.add("hidden");
 
     this.lines[this.curLineNumber].classList.add(Consts.BOARD_ACTIVE_CLASS);
     this.piecesMaker.makeNewLine(this.curLineNumber, this.getSentence());
