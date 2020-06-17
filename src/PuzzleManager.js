@@ -13,6 +13,7 @@ export default class PuzzleManager {
     this.lines = document.querySelectorAll(".board--line");
     this.respawn = document.querySelector(".respawn");
     this.checkButton = document.querySelector(".check_button");
+    this.fillAnswButton = document.querySelector(".fill_button");
     this.img = new Image();
 
     this.imgRatio;
@@ -62,38 +63,95 @@ export default class PuzzleManager {
     this.imgRatio = this.img.height / this.img.width;
     this.resizeHandler();
 
-    this.lines[this.curLineNumber].classList.add("board--line-active");
+    this.lines[this.curLineNumber].classList.add(Consts.BOARD_ACTIVE_CLASS);
     this.piecesMaker.makeNewLine(this.curLineNumber, this.getSentence());
+    this.fillAnswButton.classList.remove(Consts.TRANSPARENT_CLASS);
 
     window.addEventListener("resize", () => this.resizeHandler());
   }
 
-  setHandlers() {
-    this.img.addEventListener("load", () => this.imgLoadHandler());
-    this.checkButton.addEventListener("click", () => this.checkAnswer());
+  showCheckButton() {
+    this.checkButton.classList.remove(Consts.TRANSPARENT_CLASS);
+    this.fillAnswButton.classList.add(Consts.TRANSPARENT_CLASS);
+  }
+
+  showFillButton() {
+    this.fillAnswButton.classList.remove(Consts.TRANSPARENT_CLASS);
+    this.checkButton.classList.add(Consts.TRANSPARENT_CLASS);
   }
 
   checkAnswer() {
     const pieces = this.lines[this.curLineNumber].children;
     const sentence = this.getSentence();
     const words = sentence.split(" ");
-    const isRightWord = (word, i) =>
-      pieces[i] && pieces[i].dataset.word === word;
+    let answer = true;
 
-    const answer = words.every(isRightWord);
+    words.forEach((word, i) => {
+      const wordOnPiece = pieces[i].dataset.word;
+      const isWordRight = wordOnPiece === word;
 
-    if (!answer) return;
+      answer = answer && isWordRight;
+
+      if (isWordRight)
+        this.piecesMaker.redrawWord(wordOnPiece, Consts.TEXT_GREEN);
+      else this.piecesMaker.redrawWord(wordOnPiece, Consts.TEXT_RED);
+    });
+
+    return answer;
+  }
+
+  checkBtnHandler() {
+    const isRightAnswer = this.checkAnswer();
+
+    if (!isRightAnswer) return;
 
     if (this.curLineNumber === Consts.SENTENCE_COUNT - 1) {
       alert("Congratulations!");
       return;
     }
 
-    this.lines[this.curLineNumber].classList.remove("board--line-active");
+    this.piecesMaker.redrawLine(this.curLineNumber);
+    this.lines[this.curLineNumber].classList.remove(Consts.BOARD_ACTIVE_CLASS);
     this.curLineNumber += 1;
-    this.lines[this.curLineNumber].classList.add("board--line-active");
+    this.lines[this.curLineNumber].classList.add(Consts.BOARD_ACTIVE_CLASS);
     this.actions.setLine(this.lines[this.curLineNumber]);
-
     this.piecesMaker.makeNewLine(this.curLineNumber, this.getSentence());
+    this.showFillButton();
+  }
+
+  changeCheckToContinueButton() {
+    this.checkButton.textContent = Consts.CONTINUE_BTN_NAME;
+  }
+
+  changeContinueButtonToCheck() {
+    this.checkButton.textContent = Consts.CHECK_BTN_NAME;
+  }
+
+  fillAnswer() {
+    const curPieces = this.piecesMaker.linesData[this.curLineNumber].piecesData;
+    curPieces.forEach(piece =>
+      this.lines[this.curLineNumber].append(piece.elem)
+    );
+    this.piecesMaker.updateLocksConnections();
+    this.showCheckButton();
+    this.changeCheckToContinueButton();
+  }
+
+  pieceMovedHandler() {
+    if (this.respawn.children.length) {
+      this.showFillButton();
+    } else {
+      this.changeContinueButtonToCheck();
+      this.showCheckButton();
+    }
+  }
+
+  setHandlers() {
+    this.img.addEventListener("load", () => this.imgLoadHandler());
+    this.checkButton.addEventListener("click", () => this.checkBtnHandler());
+    this.fillAnswButton.addEventListener("click", () => this.fillAnswer());
+    document.body.addEventListener("pieceMoved", () =>
+      this.pieceMovedHandler()
+    );
   }
 }

@@ -40,7 +40,7 @@ export default class PiecesMaker {
     );
   }
 
-  addText(ctx, word, textRectStart, textRectW) {
+  addText(ctx, word, textRectStart, textRectW, color) {
     ctx.font = `900 ${this.canvasH}px Consolas`;
 
     const offsetY = Consts.PIECE_COEFS.textYoffset * this.canvasH;
@@ -49,6 +49,7 @@ export default class PiecesMaker {
 
     if (margin > 0) textRectStart += margin;
 
+    ctx.fillStyle = color;
     ctx.fillText(word, textRectStart, offsetY, textRectW);
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = Consts.PIECE_COEFS.textStroke * this.canvasH;
@@ -59,7 +60,7 @@ export default class PiecesMaker {
     ctx.drawImage(this.img, bgParams.x, bgParams.y, this.boardW, this.boardH);
   }
 
-  fillFirstPiece(canvas, textRectW, bgParams, word) {
+  fillFirstPiece(canvas, textRectW, bgParams, word, textColor) {
     const ctx = canvas.getContext("2d");
     const textRectStart = 0;
     const textRectEnd = textRectW;
@@ -73,12 +74,12 @@ export default class PiecesMaker {
     ctx.clip();
 
     this.addBg(ctx, bgParams);
-    this.addText(ctx, word, textRectStart, textRectW);
+    this.addText(ctx, word, textRectStart, textRectW, textColor);
 
     return canvas;
   }
 
-  fillMiddlePiece(canvas, textRectW, bgParams, word) {
+  fillMiddlePiece(canvas, textRectW, bgParams, word, textColor) {
     const ctx = canvas.getContext("2d");
     const textRectStart = this.leftLockW;
     const textRectEnd = this.leftLockW + textRectW;
@@ -92,12 +93,12 @@ export default class PiecesMaker {
     ctx.clip();
 
     this.addBg(ctx, bgParams);
-    this.addText(ctx, word, textRectStart, textRectW);
+    this.addText(ctx, word, textRectStart, textRectW, textColor);
 
     return canvas;
   }
 
-  fillLastPiece(canvas, textRectW, bgParams, word) {
+  fillLastPiece(canvas, textRectW, bgParams, word, textColor) {
     const ctx = canvas.getContext("2d");
     const textRectStart = this.leftLockW;
     const textRectEnd = this.leftLockW + textRectW;
@@ -111,7 +112,7 @@ export default class PiecesMaker {
     ctx.clip();
 
     this.addBg(ctx, bgParams);
-    this.addText(ctx, word, textRectStart, textRectW);
+    this.addText(ctx, word, textRectStart, textRectW, textColor);
 
     return canvas;
   }
@@ -150,25 +151,45 @@ export default class PiecesMaker {
     return lineNumber * (this.canvasH + linesGap);
   }
 
-  getBgStartX(pieceIndex, prevBgStartX, textWidth) {
-    if (pieceIndex === 0) return prevBgStartX + textWidth + this.lockGap;
+  getBgStartX(type, prevBgStartX, textWidth) {
+    if (type === Consts.TYPE_FIRST)
+      return prevBgStartX + textWidth + this.lockGap;
 
     return prevBgStartX + textWidth + this.lockGap + this.leftLockW;
   }
 
-  fillPiece(baseEl, word, textWidth, wordIndex, wordsCount, bgX, bgY) {
-    const bgPosition = {
-      x: -bgX,
-      y: -bgY
-    };
-
-    if (wordIndex === 0) {
-      this.fillFirstPiece(baseEl, textWidth, bgPosition, word);
-    } else if (wordIndex === wordsCount - 1) {
-      this.fillLastPiece(baseEl, textWidth, bgPosition, word);
+  fillPiece(pieceData, textColor) {
+    if (pieceData.type === Consts.TYPE_MIDDLE) {
+      this.fillMiddlePiece(
+        pieceData.elem,
+        pieceData.textWidth,
+        pieceData.bgPos,
+        pieceData.word,
+        textColor
+      );
+    } else if (pieceData.type === Consts.TYPE_FIRST) {
+      this.fillFirstPiece(
+        pieceData.elem,
+        pieceData.textWidth,
+        pieceData.bgPos,
+        pieceData.word,
+        textColor
+      );
     } else {
-      this.fillMiddlePiece(baseEl, textWidth, bgPosition, word);
+      this.fillLastPiece(
+        pieceData.elem,
+        pieceData.textWidth,
+        pieceData.bgPos,
+        pieceData.word,
+        textColor
+      );
     }
+  }
+
+  getType(index, wordsArrLength) {
+    if (index === 0) return Consts.TYPE_FIRST;
+    if (index === wordsArrLength - 1) return Consts.TYPE_LAST;
+    return Consts.TYPE_MIDDLE;
   }
 
   makeNewLine(lineNumber, sentence) {
@@ -181,15 +202,24 @@ export default class PiecesMaker {
     wordsArr.forEach((word, i) => {
       const textWidth = letterW * word.length;
       const element = this.makeElement(word);
+      const type = this.getType(i, wordsArr.length);
 
-      this.fillPiece(element, word, textWidth, i, wordsArr.length, bgX, bgY);
-      bgX = this.getBgStartX(i, bgX, textWidth);
-
-      linePiecesData.push({
+      const pieceData = {
         elem: element,
         index: i,
-        word: word
-      });
+        word: word,
+        textWidth: textWidth,
+        type: type,
+        bgPos: {
+          x: -bgX,
+          y: -bgY
+        }
+      };
+
+      linePiecesData.push(pieceData);
+
+      this.fillPiece(pieceData);
+      bgX = this.getBgStartX(type, bgX, textWidth);
     });
 
     this.linesData.push({
@@ -243,6 +273,29 @@ export default class PiecesMaker {
     this.lockGap = Consts.PIECE_COEFS.lockGap * lineH;
   }
 
+  redrawWord(word, textColor) {
+    const curLine = this.linesData[this.linesData.length - 1].piecesData;
+    let pieceData = curLine.find(item => item.word === word);
+
+    pieceData = {
+      ...pieceData,
+      textColor: textColor
+    };
+
+    this.fillPiece(pieceData, textColor);
+  }
+
+  redrawLine(line) {
+    const curLine = this.linesData[line].piecesData;
+    curLine.forEach(data => {
+      data = {
+        ...data,
+        textColor: Consts.TEXT_BLACK
+      };
+      this.fillPiece(data);
+    });
+  }
+
   resizePieces(boardW, boardH, lineH) {
     this.initSizes(boardW, boardH, lineH);
 
@@ -256,19 +309,19 @@ export default class PiecesMaker {
       const bgY = this.getBgLineStartY(lineNumber);
       let bgX = 0;
 
-      lineDataItem.piecesData.forEach(piece => {
-        const textWidth = letterW * piece.word.length;
+      lineDataItem.piecesData.forEach(pieceData => {
+        const textWidth = letterW * pieceData.word.length;
+        pieceData = {
+          ...pieceData,
+          textWidth: textWidth,
+          bgPos: {
+            x: -bgX,
+            y: -bgY
+          }
+        };
 
-        this.fillPiece(
-          piece.elem,
-          piece.word,
-          textWidth,
-          piece.index,
-          wordsCount,
-          bgX,
-          bgY
-        );
-        bgX = this.getBgStartX(piece.index, bgX, textWidth);
+        this.fillPiece(pieceData);
+        bgX = this.getBgStartX(pieceData.type, bgX, textWidth);
       });
 
       this.updateLocksConnections();

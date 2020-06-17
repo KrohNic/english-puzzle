@@ -12,14 +12,12 @@ html {
 }
 
 body {
-  min-height: 100vh;
   font-family: Calibri, Arial, Helvetica, sans-serif;
   background-color: var(--body-color);
 }
 
 .hidden {
-  visibility: hidden;
-  opacity: 0;
+  display: none;
 }
 
 .transparent {
@@ -162,6 +160,10 @@ body {
   background-color: rgba(0, 0, 0, 0.63);
 }
 
+.board--line-active > * {
+  cursor: pointer;
+}
+
 .board--line-hover {
   background-color: rgb(99, 200, 71);
 }
@@ -191,9 +193,11 @@ body {
 
 .respawn > * {
   margin: 5px;
+  cursor: pointer;
 }
 
-.check_button {
+.puzzle_buttons {
   margin: 20px auto 10px;
-  display: block;
+  display: flex;
+  justify-content: space-evenly;
 }
